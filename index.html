@@ -14,7 +14,7 @@
 
   <h2>LaTeX ইনপুট → সাধারণ টেক্সটে রূপান্তর</h2>
 
-  <textarea id="latexInput">$99999 - 87650 = 12349$</textarea>
+  <textarea id="latexInput">$ \int x^n \, dx = \frac{x^{n+1}}{n+1} + C \quad (n \ne -1) $</textarea>
   <br>
   <button onclick="convertLatex()">Convert</button>
 
@@ -24,28 +24,30 @@
     function convertLatex() {
       let input = document.getElementById('latexInput').value;
 
-      // $...$ সরিয়ে ফেলো
+      // Remove dollar signs
       input = input.replace(/\$/g, '');
 
-      // superscript conversion (LaTeX ^ → Unicode superscript)
-      const superscripts = {
-        '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴',
-        '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹',
-        'n': 'ⁿ', 'i': 'ⁱ'
-      };
-      input = input.replace(/\^([0-9ni])/g, (_, c) => superscripts[c] || '^' + c);
+      // Replace common LaTeX symbols with plain text equivalents
+      input = input.replace(/\\int/g, '∫')
+                   .replace(/\\,|\\quad/g, ' ')
+                   .replace(/\\ne/g, '≠');
 
-      // fractions, if any (basic demo)
-      input = input.replace(/\\frac{([^}]*)}{([^}]*)}/g, '($1/$2)');
+      // Handle superscripts with ^{...}
+      input = input.replace(/\^\{([^}]+)\}/g, (_, exp) => {
+        const map = {'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','n':'ⁿ','+':'⁺','-':'⁻'};
+        return [...exp].map(c => map[c] || c).join('');
+      });
 
-      // other LaTeX replacements (optional)
-      input = input.replace(/\\times/g, '×')
-                   .replace(/\\div/g, '÷')
-                   .replace(/\\leq/g, '≤')
-                   .replace(/\\geq/g, '≥')
-                   .replace(/\\neq/g, '≠');
+      // Handle superscripts with ^x
+      input = input.replace(/\^([0-9a-zA-Z])/g, (_, c) => {
+        const map = {'0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹','n':'ⁿ','+':'⁺','-':'⁻'};
+        return map[c] || c;
+      });
 
-      // show output
+      // Replace fractions
+      input = input.replace(/\\frac{([^}]+)}{([^}]+)}/g, '($1/$2)');
+
+      // Show output
       document.getElementById('output').textContent = input;
     }
   </script>
